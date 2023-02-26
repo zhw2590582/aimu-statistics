@@ -44,7 +44,14 @@ function createOption(file) {
     const reader = new FileReader();
     reader.readAsText(file);
     reader.onload = () => {
-      console.log(reader.result);
+      const lines = reader.result
+        .split("\n")
+        .filter(Boolean)
+        .map((item) => {
+          const data = JSON.parse(item);
+          return data;
+        });
+      console.log(lines);
       resolve(option);
     };
   });
