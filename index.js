@@ -7,15 +7,15 @@ function createOption(file) {
       {
         show: true,
         realtime: true,
-        start: 30,
-        end: 70,
+        start: 80,
+        end: 100,
         xAxisIndex: [0, 1],
       },
       {
         type: "inside",
         realtime: true,
-        start: 30,
-        end: 70,
+        start: 80,
+        end: 100,
         xAxisIndex: [0, 1],
       },
     ],
@@ -30,12 +30,13 @@ function createOption(file) {
     },
     yAxis: {},
     xAxis: {
-      data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"],
+      data: [],
     },
     series: [
       {
         type: "line",
-        data: [5, 20, 36, 10, 10, 20],
+        smooth: true,
+        data: [],
       },
     ],
   };
@@ -44,14 +45,29 @@ function createOption(file) {
     const reader = new FileReader();
     reader.readAsText(file);
     reader.onload = () => {
-      const lines = reader.result
-        .split("\n")
-        .filter(Boolean)
-        .map((item) => {
-          const data = JSON.parse(item);
-          return data;
-        });
-      console.log(lines);
+      const day = 86400000;
+      const result = [];
+      const lines = reader.result.split("\n");
+      for (let index = 0; index < lines.length; index++) {
+        const item = lines[index];
+        if (!item) continue;
+        const { createdAt, updatedAt } = JSON.parse(item);
+        const date = createdAt || updatedAt;
+        if (result.length === 0) {
+          result.push([date]);
+        } else {
+          const last = result[result.length - 1];
+          if (last[0] + day > date) {
+            last.push(date);
+          } else {
+            result.push([date]);
+          }
+        }
+      }
+      option.xAxis.data = result.map((item) =>
+        window["dayjs"](item[0]).format("YYYY-MM-DD")
+      );
+      option.series[0].data = result.map((item) => item.length);
       resolve(option);
     };
   });
